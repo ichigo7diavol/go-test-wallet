@@ -15,6 +15,25 @@ services:
       - 40000:40000
     volumes:
       - ./../:/app
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - ./../.env
+
+  wallet-service-test:
+    build:
+      context: ./..
+      dockerfile: ./build/Dockerfile.test
+    image: wallet-service-test:latest
+    profiles: ["test"]
+    command: > 
+      go test -tags=integration ./...
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - ./../.env
 
   wallet-service-release:
     build:
@@ -22,3 +41,25 @@ services:
       dockerfile: ./build/Dockerfile.release
     image: wallet-service-release:latest
     profiles: ["release"]
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - ./../.env
+
+  db:
+    image: postgres:16
+    ports:
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+    volumes:
+      - ./.postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    env_file:
+      - ./../.env
+
+volumes:
+  postgres_data:

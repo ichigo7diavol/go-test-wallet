@@ -27,3 +27,9 @@ Thumbs.db
 
 # Logs
 *.log
+
+# postgres
+*.postgres_data*
+
+# binaries
+bin/*
