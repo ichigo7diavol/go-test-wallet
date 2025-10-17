@@ -1,0 +1,182 @@
+openapi: 3.0.3
+info:
+  title: Wallet Service API
+  version: 1.0.0
+  description: >
+    REST API для управления кошельками и балансом пользователей.  
+    Поддерживает конкурентные операции (до 1000 RPS по одному кошельку).  
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development
+
+paths:
+  /wallets:
+    get:
+      summary: Получить список всех кошельков
+      operationId: listWallets
+      tags: [Wallet]
+      responses:
+        '200':
+          description: Список кошельков
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Wallet'
+    post:
+      summary: Создать новый кошелек
+      operationId: createWallet
+      tags: [Wallet]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateWalletRequest'
+      responses:
+        '201':
+          description: Кошелек успешно создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Wallet'
+
+  /wallet/{walletId}:
+    get:
+      summary: Получить информацию о кошельке
+      operationId: getWallet
+      tags: [Wallet]
+      parameters:
+        - name: walletId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Информация о кошельке
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Wallet'
+        '404':
+          description: Кошелек не найден
+    delete:
+      summary: Удалить кошелек
+      operationId: deleteWallet
+      tags: [Wallet]
+      parameters:
+        - name: walletId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Кошелек успешно удален
+        '404':
+          description: Кошелек не найден
+
+  /wallet:
+    post:
+      summary: Совершить операцию с балансом (DEPOSIT или WITHDRAW)
+      operationId: changeWallet
+      tags: [Wallet]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WalletOperationRequest'
+      responses:
+        '200':
+          description: Операция успешно выполнена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WalletOperationResponse'
+        '400':
+          description: Некорректные данные запроса
+        '404':
+          description: Кошелек не найден
+        '409':
+          description: Недостаточно средств
+        '500':
+          description: Внутренняя ошибка сервера
+
+components:
+  schemas:
+    Wallet:
+      type: object
+      properties:
+        walletId:
+          type: string
+          format: uuid
+          example: "b1f04c42-2b54-4b73-996c-cc0d0579b5c0"
+        balance:
+          type: number
+          format: float
+          example: 2500.50
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateWalletRequest:
+      type: object
+      properties:
+        initialBalance:
+          type: number
+          format: float
+          example: 0.0
+      required: [initialBalance]
+
+    WalletOperationRequest:
+      type: object
+      required:
+        - walletId
+        - operationType
+        - amount
+      properties:
+        walletId:
+          type: string
+          format: uuid
+          example: "b1f04c42-2b54-4b73-996c-cc0d0579b5c0"
+        operationType:
+          type: string
+          enum: [DEPOSIT, WITHDRAW]
+          example: DEPOSIT
+        amount:
+          type: number
+          format: float
+          example: 1000.00
+
+    WalletOperationResponse:
+      type: object
+      properties:
+        walletId:
+          type: string
+          format: uuid
+        oldBalance:
+          type: number
+          format: float
+          example: 500.00
+        newBalance:
+          type: number
+          format: float
+          example: 1500.00
+        operationType:
+          type: string
+          enum: [DEPOSIT, WITHDRAW]
+        amount:
+          type: number
+          format: float
+        timestamp:
+          type: string
+          format: date-time

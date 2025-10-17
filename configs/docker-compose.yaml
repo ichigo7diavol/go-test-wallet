@@ -1,0 +1,24 @@
+name: wallet-app
+services: 
+  wallet-service-debug:
+    build:
+      context: ./..
+      dockerfile: ./build/Dockerfile.debug
+    image: wallet-service-debug:latest
+    profiles: ["debug"]
+    command: >
+      dlv debug ./cmd/app
+      --headless --listen=0.0.0.0:40000
+      --api-version=2 --accept-multiclient 
+      --output=/app/bin/debug
+    ports:
+      - 40000:40000
+    volumes:
+      - ./../:/app
+
+  wallet-service-release:
+    build:
+      context: ./..
+      dockerfile: ./build/Dockerfile.release
+    image: wallet-service-release:latest
+    profiles: ["release"]

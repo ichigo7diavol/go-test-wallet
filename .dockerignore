@@ -1,0 +1,27 @@
+# Системное / IDE
+.DS_Store
+.vscode/
+.idea/
+
+# Git
+.git
+.gitignore
+
+# Docker
+docker-compose.override.yml
+Dockerfile.*
+build/
+dist/
+tmp/
+cache/
+
+# Go build artifacts
+bin/
+*.exe
+*.test
+*.out
+*.log
+__debug_bin*
+
+# Dependencies / tools
+vendor/
