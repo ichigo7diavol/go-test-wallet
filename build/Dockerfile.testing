@@ -3,12 +3,3 @@ FROM golang:1.24-bookworm AS builder
 ARG CGO_ENABLED=1
 
 WORKDIR /app
-
-COPY . .
-RUN go build -o /out/app ./cmd/app
-
-FROM alpine:3.20
-
-WORKDIR /app
-
-COPY --from=builder /out/app .

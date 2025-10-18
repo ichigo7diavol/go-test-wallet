@@ -7,7 +7,7 @@ import (
 )
 
 type WalletModel struct {
-	ID        uuid.UUID `gorm:"type:uuid;default:gen_random_uuid();primaryKey"`
+	ID        uuid.UUID `gorm:"type:uuid;primaryKey"`
 	Balance   float32   `gorm:"not null"`
 	CreatedAt time.Time
 	UpdatedAt time.Time

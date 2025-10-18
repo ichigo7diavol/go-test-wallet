@@ -28,7 +28,9 @@ services:
       dockerfile: ./build/Dockerfile.testing
     image: wallet-service-test:latest
     command: > 
-      go test -tags=integration ./...
+      go test -tags=integration,unit ./...
+    volumes:
+      - ./../:/app
     env_file:
       - ./../.env
     profiles: ["test"]

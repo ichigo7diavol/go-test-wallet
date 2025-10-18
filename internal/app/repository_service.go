@@ -39,6 +39,7 @@ func (r *RepositoryService) Create(initialBalance float32) (*models.WalletModel,
 		return nil, ErrInvalidAmount
 	}
 	w := &models.WalletModel{
+		ID:        uuid.New(),
 		Balance:   initialBalance,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
