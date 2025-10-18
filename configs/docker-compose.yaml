@@ -5,7 +5,6 @@ services:
       context: ./..
       dockerfile: ./build/Dockerfile.debug
     image: wallet-service-debug:latest
-    profiles: ["debug"]
     command: >
       dlv debug ./cmd/app
       --headless --listen=0.0.0.0:40000
@@ -20,13 +19,13 @@ services:
         condition: service_healthy
     env_file:
       - ./../.env
+    profiles: ["debug"]
 
   wallet-service-test:
     build:
       context: ./..
       dockerfile: ./build/Dockerfile.test
     image: wallet-service-test:latest
-    profiles: ["test"]
     command: > 
       go test -tags=integration ./...
     depends_on:
@@ -34,18 +33,19 @@ services:
         condition: service_healthy
     env_file:
       - ./../.env
+    profiles: ["test"]
 
   wallet-service-release:
     build:
       context: ./..
       dockerfile: ./build/Dockerfile.release
     image: wallet-service-release:latest
-    profiles: ["release"]
     depends_on:
       db:
         condition: service_healthy
     env_file:
       - ./../.env
+    profiles: ["release"]
 
   db:
     image: postgres:16
@@ -60,6 +60,7 @@ services:
       retries: 5
     env_file:
       - ./../.env
+    profiles: ["debug", "release"]
 
 volumes:
   postgres_data:

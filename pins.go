@@ -10,5 +10,6 @@ import (
 	_ "go.infratographer.com/x/echox/echozap"
 	_ "go.uber.org/zap"
 	_ "gorm.io/driver/postgres"
+	_ "gorm.io/driver/sqlite"
 	_ "gorm.io/gorm"
 )
