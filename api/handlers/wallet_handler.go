@@ -74,7 +74,7 @@ func (h *WalletHandler) ChangeWallet(ctx echo.Context) error {
 
 func (h *WalletHandler) ListWallets(ctx echo.Context) error {
 	models, err := h.WalletService.ListWallets()
-	if err == nil {
+	if err != nil {
 		return NewHttpError(err)
 	}
 	wallets := make([]openapi.Wallet, len(models))
