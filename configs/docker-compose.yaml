@@ -7,11 +7,11 @@ services:
     image: wallet-service-debug:latest
     command: >
       dlv debug ./cmd/app
-      --headless --listen=0.0.0.0:40000
+      --headless --listen=0.0.0.0:${WALLET_APP_DEBUG_PORT}
       --api-version=2 --accept-multiclient 
       --output=/app/bin/debug
     ports:
-      - 40000:40000
+      - ${WALLET_APP_DEBUG_PORT}:${WALLET_APP_DEBUG_PORT}
       - ${WALLET_APP_PORT}:${WALLET_APP_PORT}
     volumes:
       - ./../:/app
