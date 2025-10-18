@@ -32,16 +32,17 @@ func main() {
 	z.Info("Connecting to database")
 	db, err := gorm.Open(postgres.Open(config.Dsn), &gorm.Config{})
 	if err != nil {
-		// zap.Fatal("Ошибка подключения к БД: ", err)
+		z.Sugar().Fatal(err)
 	}
 	if err := db.AutoMigrate(&models.WalletModel{}); err != nil {
-		// zap.Fatal("Ошибка миграции: ", err)
+		z.Sugar().Fatal(err)
 	}
 	repository := app.NewRepository(db)
 	walletService := app.NewWalletService(repository)
 	h := handlers.NewWalletHandler(walletService)
 	openapi.RegisterHandlers(e, h)
 
+	z.Info("Setup middleware")
 	e.Use(echozap.Middleware(z))
 
 	z.Info("Starting server")

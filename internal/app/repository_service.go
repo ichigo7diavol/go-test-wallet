@@ -35,6 +35,9 @@ type WalletRepositoryService interface {
 }
 
 func (r *RepositoryService) Create(initialBalance float32) (*models.WalletModel, error) {
+	if initialBalance < 0 {
+		return nil, ErrInvalidAmount
+	}
 	w := &models.WalletModel{
 		Balance:   initialBalance,
 		CreatedAt: time.Now(),
