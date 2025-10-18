@@ -41,7 +41,7 @@ func main() {
 	repository := app.NewRepository(db)
 	walletService := app.NewWalletService(repository)
 	h := handlers.NewWalletHandler(walletService)
-	openapi.RegisterHandlers(e, h)
+	openapi.RegisterHandlersWithBaseURL(e, h, "/api/v1")
 
 	z.Info("Setup middleware")
 	e.Use(echozap.Middleware(z))
