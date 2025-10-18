@@ -49,9 +49,9 @@ func (s *WalletService) ChangeBalance(id uuid.UUID, op WalletOperation, amount f
 	err error,
 ) {
 	switch op {
-	case WithdrawOperation:
-		return s.repository.Deposit(id, amount)
 	case DepositOperation:
+		return s.repository.Deposit(id, amount)
+	case WithdrawOperation:
 		return s.repository.Withdraw(id, amount)
 	default:
 		return 0, 0, nil, ErrUnknownOperation

@@ -181,7 +181,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.POST(baseURL+"/wallet", wrapper.ChangeWallet)
 	router.GET(baseURL+"/wallets", wrapper.ListWallets)
 	router.POST(baseURL+"/wallets", wrapper.CreateWallet)
-	router.DELETE(baseURL+"/wallets/:walletId", wrapper.DeleteWallet)
-	router.GET(baseURL+"/wallets/:walletId", wrapper.GetWallet)
+	router.DELETE(baseURL+"/wallet/:walletId", wrapper.DeleteWallet)
+	router.GET(baseURL+"/wallet/:walletId", wrapper.GetWallet)
 
 }
