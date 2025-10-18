@@ -29,9 +29,6 @@ services:
     image: wallet-service-test:latest
     command: > 
       go test -tags=integration ./...
-    depends_on:
-      db:
-        condition: service_healthy
     env_file:
       - ./../.env
     profiles: ["test"]
