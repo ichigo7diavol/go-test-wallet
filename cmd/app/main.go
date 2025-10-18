@@ -30,10 +30,11 @@ func main() {
 		zap.String("Dsn", config.Dsn),
 	)
 	z.Info("Connecting to database")
-	db, err := gorm.Open(postgres.Open(config.Dsn), &gorm.Config{})
+	db, cleanup, err := NewDatabaseConnection(config.Dsn)
 	if err != nil {
 		z.Sugar().Fatal(err)
 	}
+	defer cleanup()
 	if err := db.AutoMigrate(&models.WalletModel{}); err != nil {
 		z.Sugar().Fatal(err)
 	}
@@ -47,4 +48,17 @@ func main() {
 
 	z.Info("Starting server")
 	e.Logger.Fatal(e.Start(":" + config.Port))
+}
+
+func NewDatabaseConnection(dsn string) (*gorm.DB, func() error, error) {
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		return nil, nil, err
+	}
+	sqlDB, err := db.DB()
+	if err != nil {
+		return nil, nil, err
+	}
+	cleanup := func() error { return sqlDB.Close() }
+	return db, cleanup, nil
 }

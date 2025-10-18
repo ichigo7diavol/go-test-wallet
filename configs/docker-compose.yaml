@@ -27,6 +27,7 @@ services:
       context: ./..
       dockerfile: ./build/Dockerfile.testing
     image: wallet-service-test:latest
+    working_dir: /app
     command: > 
       go test -tags=integration,unit ./...
     volumes:

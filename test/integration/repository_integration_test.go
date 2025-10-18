@@ -1,6 +1,6 @@
 //go:build integration
 
-package app_test
+package integration_test
 
 import (
 	"testing"
@@ -14,18 +14,24 @@ import (
 	"gorm.io/gorm"
 )
 
-func setupTestDB(t *testing.T) *gorm.DB {
+func setupTestDB(t *testing.T) (*gorm.DB, func() error, error) {
 	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
+	require.NoError(t, err)
+
+	sqlDB, err := db.DB()
 	require.NoError(t, err)
 
 	err = db.AutoMigrate(&models.WalletModel{})
 	require.NoError(t, err)
-
-	return db
+	cleanup := func() error { return sqlDB.Close() }
+	return db, cleanup, nil
 }
 
 func TestRepository_CreateAndGet(t *testing.T) {
-	db := setupTestDB(t)
+	db, cleanup, err := setupTestDB(t)
+	require.NoError(t, err)
+	defer cleanup()
+
 	repo := app.NewRepository(db)
 
 	w, err := repo.Create(100)
@@ -40,7 +46,10 @@ func TestRepository_CreateAndGet(t *testing.T) {
 }
 
 func TestRepository_Create_InvalidAmount(t *testing.T) {
-	db := setupTestDB(t)
+	db, cleanup, err := setupTestDB(t)
+	require.NoError(t, err)
+	defer cleanup()
+
 	repo := app.NewRepository(db)
 
 	w, err := repo.Create(-10)
@@ -49,7 +58,10 @@ func TestRepository_Create_InvalidAmount(t *testing.T) {
 }
 
 func TestRepository_UpdateBalance(t *testing.T) {
-	db := setupTestDB(t)
+	db, cleanup, err := setupTestDB(t)
+	require.NoError(t, err)
+	defer cleanup()
+
 	repo := app.NewRepository(db)
 
 	w, _ := repo.Create(50)
@@ -61,25 +73,34 @@ func TestRepository_UpdateBalance(t *testing.T) {
 }
 
 func TestRepository_UpdateBalance_Invalid(t *testing.T) {
-	db := setupTestDB(t)
+	db, cleanup, err := setupTestDB(t)
+	require.NoError(t, err)
+	defer cleanup()
+
 	repo := app.NewRepository(db)
 
 	w, _ := repo.Create(50)
-	_, _, _, err := repo.UpdateBalance(w.ID, -5)
+	_, _, _, err = repo.UpdateBalance(w.ID, -5)
 	require.ErrorIs(t, err, app.ErrInvalidAmount)
 }
 
 func TestRepository_UpdateBalance_NotFound(t *testing.T) {
-	db := setupTestDB(t)
+	db, cleanup, err := setupTestDB(t)
+	require.NoError(t, err)
+	defer cleanup()
+
 	repo := app.NewRepository(db)
 
 	id := uuid.New()
-	_, _, _, err := repo.UpdateBalance(id, 100)
+	_, _, _, err = repo.UpdateBalance(id, 100)
 	require.ErrorIs(t, err, app.ErrWalletNotFound)
 }
 
 func TestRepository_Deposit(t *testing.T) {
-	db := setupTestDB(t)
+	db, cleanup, err := setupTestDB(t)
+	require.NoError(t, err)
+	defer cleanup()
+
 	repo := app.NewRepository(db)
 
 	w, _ := repo.Create(100)
@@ -91,16 +112,22 @@ func TestRepository_Deposit(t *testing.T) {
 }
 
 func TestRepository_Deposit_InvalidAmount(t *testing.T) {
-	db := setupTestDB(t)
+	db, cleanup, err := setupTestDB(t)
+	require.NoError(t, err)
+	defer cleanup()
+
 	repo := app.NewRepository(db)
 
 	w, _ := repo.Create(100)
-	_, _, _, err := repo.Deposit(w.ID, -5)
+	_, _, _, err = repo.Deposit(w.ID, -5)
 	require.ErrorIs(t, err, app.ErrInvalidAmount)
 }
 
 func TestRepository_Withdraw(t *testing.T) {
-	db := setupTestDB(t)
+	db, cleanup, err := setupTestDB(t)
+	require.NoError(t, err)
+	defer cleanup()
+
 	repo := app.NewRepository(db)
 
 	w, _ := repo.Create(100)
@@ -112,29 +139,38 @@ func TestRepository_Withdraw(t *testing.T) {
 }
 
 func TestRepository_Withdraw_InsufficientFunds(t *testing.T) {
-	db := setupTestDB(t)
+	db, cleanup, err := setupTestDB(t)
+	require.NoError(t, err)
+	defer cleanup()
+
 	repo := app.NewRepository(db)
 
 	w, _ := repo.Create(30)
-	_, _, _, err := repo.Withdraw(w.ID, 50)
+	_, _, _, err = repo.Withdraw(w.ID, 50)
 	require.ErrorIs(t, err, app.ErrInsufficientFunds)
 }
 
 func TestRepository_Withdraw_InvalidAmount(t *testing.T) {
-	db := setupTestDB(t)
+	db, cleanup, err := setupTestDB(t)
+	require.NoError(t, err)
+	defer cleanup()
+
 	repo := app.NewRepository(db)
 
 	w, _ := repo.Create(30)
-	_, _, _, err := repo.Withdraw(w.ID, -10)
+	_, _, _, err = repo.Withdraw(w.ID, -10)
 	require.ErrorIs(t, err, app.ErrInvalidAmount)
 }
 
 func TestRepository_Delete(t *testing.T) {
-	db := setupTestDB(t)
+	db, cleanup, err := setupTestDB(t)
+	require.NoError(t, err)
+	defer cleanup()
+
 	repo := app.NewRepository(db)
 
 	w, _ := repo.Create(70)
-	err := repo.Delete(w.ID)
+	err = repo.Delete(w.ID)
 	require.NoError(t, err)
 
 	_, err = repo.GetByID(w.ID)
@@ -142,16 +178,22 @@ func TestRepository_Delete(t *testing.T) {
 }
 
 func TestRepository_Delete_NotFound(t *testing.T) {
-	db := setupTestDB(t)
+	db, cleanup, err := setupTestDB(t)
+	require.NoError(t, err)
+	defer cleanup()
+
 	repo := app.NewRepository(db)
 
 	id := uuid.New()
-	err := repo.Delete(id)
+	err = repo.Delete(id)
 	require.ErrorIs(t, err, app.ErrWalletNotFound)
 }
 
 func TestRepository_List(t *testing.T) {
-	db := setupTestDB(t)
+	db, cleanup, err := setupTestDB(t)
+	require.NoError(t, err)
+	defer cleanup()
+
 	repo := app.NewRepository(db)
 
 	for i := 0; i < 3; i++ {
