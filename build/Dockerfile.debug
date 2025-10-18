@@ -1,7 +1,5 @@
 FROM golang:1.24-bookworm
 
-ARG CGO_ENABLED=1
-
 WORKDIR /app
 
 RUN go install github.com/go-delve/delve/cmd/dlv@latest

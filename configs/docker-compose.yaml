@@ -12,6 +12,7 @@ services:
       --output=/app/bin/debug
     ports:
       - 40000:40000
+      - ${WALLET_APP_PORT}:${WALLET_APP_PORT}
     volumes:
       - ./../:/app
     depends_on:
@@ -24,7 +25,7 @@ services:
   wallet-service-test:
     build:
       context: ./..
-      dockerfile: ./build/Dockerfile.test
+      dockerfile: ./build/Dockerfile.testing
     image: wallet-service-test:latest
     command: > 
       go test -tags=integration ./...
@@ -40,6 +41,10 @@ services:
       context: ./..
       dockerfile: ./build/Dockerfile.release
     image: wallet-service-release:latest
+    ports:
+      - ${WALLET_APP_PORT}:${WALLET_APP_PORT}
+    command: > 
+      ./app
     depends_on:
       db:
         condition: service_healthy
