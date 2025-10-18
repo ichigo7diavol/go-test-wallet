@@ -41,10 +41,10 @@ services:
       context: ./..
       dockerfile: ./build/Dockerfile.release
     image: wallet-service-release:latest
+    command: > 
+      /app/app
     ports:
       - ${WALLET_APP_PORT}:${WALLET_APP_PORT}
-    command: > 
-      ./app
     depends_on:
       db:
         condition: service_healthy
